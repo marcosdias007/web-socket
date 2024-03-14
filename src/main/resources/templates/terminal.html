@@ -13,9 +13,10 @@
     <h1 th:text="'Terminal: ' + ${usuario.nome}"></h1>
 
     <div id="departamentoMessages"></div>
-    <form th:action="@{/chamar-proxima-senha}" method="post">
+    <form th:action="@{/chamar-proxima-senha/{departamentoId}(departamentoId=${usuario.departamento.id})}" method="post">
         <button type="submit" class="btn btn-primary">Chamar Próxima Senha</button>
     </form>
+
     <script th:inline="javascript">
         let stompClient = null;
         let departamentoId = [[${usuario.departamento.id}]];
