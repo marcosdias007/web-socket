@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt">
+<head>
+    <title>Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stomp-websocket/lib/stomp.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1 th:text="'Terminal: ' + ${usuario.nome}"></h1>
+
+    <div id="departamentoMessages"></div>
+    <form th:action="@{/chamar-proxima-senha}" method="post">
+        <button type="submit" class="btn btn-primary">Chamar Próxima Senha</button>
+    </form>
+    <script th:inline="javascript">
+        let stompClient = null;
+        let departamentoId = [[${usuario.departamento.id}]];
+
+        function connect() {
+            let socket = new SockJS('/websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/departamento/' + departamentoId, function (message) {
+                    showDepartamentoMessage(message.body);
+                });
+            });
+        }
+
+        function showDepartamentoMessage(message) {
+            let messagesDiv = document.getElementById("departamentoMessages");
+            let senhas = JSON.parse(message);
+            messagesDiv.innerHTML = '';
+
+            senhas.forEach(senha => {
+                let card = document.createElement("div");
+                card.className = 'card mb-3';
+                card.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${senha.nome}</h5>
+            </div>
+        `;
+                messagesDiv.appendChild(card);
+            });
+        }
+
+
+        connect();
+    </script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+</html>
